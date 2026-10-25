@@ -25,6 +25,11 @@ dependencies:
   shared_preferences: ^2.2.3
   image_picker: ^1.1.2
 
+# app_links 6.4+ reads flutter.compileSdkVersion in its Android build,
+# which Flutter 3.24 does not provide to plugins yet.
+dependency_overrides:
+  app_links: 6.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
