@@ -1,0 +1,61 @@
+// The release key comes from android/key.properties (written by CI from
+// repository secrets). Without it, release builds fall back to the debug key.
+def keyProps = new Properties()
+def keyFile = rootProject.file("key.properties")
+if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "com.repraid.repraid"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.repraid.app"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // ML Kit pose detection needs Android 7.0+.
+        minSdk = 24
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    signingConfigs {
+        release {
+            if (keyFile.exists()) {
+                storeFile = file(keyProps["storeFile"])
+                storePassword = keyProps["storePassword"]
+                keyAlias = keyProps["keyAlias"]
+                keyPassword = keyProps["keyPassword"]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // One fixed key, so a new APK installs over the old one.
+            signingConfig = keyFile.exists() ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}

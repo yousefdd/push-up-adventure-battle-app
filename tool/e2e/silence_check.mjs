@@ -1,0 +1,12 @@
+import { launch, open, tap, reps } from './nav.mjs';
+const b = await launch();
+const p = await open(b);
+const audio = [];
+p.on('request', r => { if (/\.(ogg|wav|mp3)$/.test(r.url())) audio.push(r.url().split('/').pop()); });
+await tap(p, 'Adventure', { wait: 2500 });
+await tap(p, 'Start', { wait: 3000 });
+await reps(p, 4);
+await p.screenshot({ path: process.argv[2] + '/run_silent.png' });
+console.log('audio requests:', audio.length, audio.join(','));
+console.log('errors:', p.errs.filter(e => !/TUNNEL/.test(e)).slice(0, 5));
+await b.close();

@@ -1,0 +1,80 @@
+name: repraid
+description: Online 60-second rep races + an offline fitness RPG. One honest rep engine.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Realtime duels + auth + matchmaking RPCs.
+  supabase_flutter: ^2.5.6
+
+  # Camera feed for pose detection. Pair with your chosen pose backend:
+  # the RepChamp app already bundles MediaPipe Pose Landmarker (.task models),
+  # so the engine can be fed from that; google_mlkit_pose_detection is an
+  # alternative that matches the source app's landmark set exactly.
+  camera: ^0.11.0
+  google_mlkit_pose_detection: ^0.13.0
+
+  # Local persistence for the offline RPG (save file, hero, loot).
+  shared_preferences: ^2.2.3
+  image_picker: ^1.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/rpg/
+    - assets/art/
+    - assets/rc/
+
+  fonts:
+    - family: LilitaOne
+      fonts:
+        - asset: assets/fonts/LilitaOne-Regular.ttf
+    # Arabic: Lalezar for display text, Tajawal for body (both SIL OFL).
+    - family: Lalezar
+      fonts:
+        - asset: assets/fonts/Lalezar-Regular.ttf
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/Tajawal-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Tajawal-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Tajawal-ExtraBold.ttf
+          weight: 800
+    - family: Baloo2
+      fonts:
+        - asset: assets/fonts/baloo2_semibold.ttf
+          weight: 600
+        - asset: assets/fonts/baloo2_bold.ttf
+          weight: 700
+        - asset: assets/fonts/baloo2_extrabold.ttf
+          weight: 800
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/nunito_semibold.ttf
+          weight: 600
+        - asset: assets/fonts/nunito_bold.ttf
+          weight: 700
+        - asset: assets/fonts/nunito_extrabold.ttf
+          weight: 800
+        - asset: assets/fonts/nunito_black.ttf
+          weight: 900
+    # The web renderer (CanvasKit) loads "Roboto" from the network as its last
+    # fallback unless a family of that name is bundled; Nunito stands in so the
+    # app never needs the network for text.
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/nunito_semibold.ttf

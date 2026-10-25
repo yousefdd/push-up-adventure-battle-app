@@ -1,0 +1,15 @@
+import { launch, open, nodes, tap, reps } from './nav.mjs';
+const b = await launch();
+const p = await open(b);
+const audio = [];
+p.on('request', r => { if (/music_|sfx\//.test(r.url())) audio.push(r.url().split('/').pop()); });
+console.log((await nodes(p)).map(n => n.label.slice(0, 30)).join(' | '));
+await tap(p, 'Adventure', { wait: 2500 });
+await p.screenshot({ path: process.argv[2] + '/home.png' });
+console.log('after home:', audio.join(','));
+await tap(p, 'Start', { wait: 3000 });
+await reps(p, 3);
+await p.screenshot({ path: process.argv[2] + '/run.png' });
+console.log('after run:', audio.join(','));
+console.log('errors:', p.errs.slice(0, 5));
+await b.close();

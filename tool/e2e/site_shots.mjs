@@ -1,0 +1,32 @@
+// Phone screenshots for the download website, in Arabic.
+import { launch, tap, reps } from './nav.mjs';
+const out = process.argv[2];
+const b = await launch();
+const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+await p.addInitScript(() => {
+  if (sessionStorage.getItem('seeded')) return;
+  localStorage.setItem('flutter.rr.save', JSON.stringify({ version: 1, class: 'knight', unlocked: 4 }));
+  localStorage.setItem('flutter.rr.lang', JSON.stringify('ar'));
+  localStorage.setItem('flutter.rr.stats', JSON.stringify(JSON.stringify({ rating: 1612, peak_rating: 1640, ranked_games: 44, wins: 27, losses: 16, draws: 1, coins: 12, silver: 86 })));
+  sessionStorage.setItem('seeded', '1');
+});
+await p.goto('http://localhost:8765/');
+await p.waitForTimeout(5000);
+await p.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click());
+await p.waitForTimeout(800);
+await p.screenshot({ path: `${out}/home.png` });
+await tap(p, 'المتجر', { wait: 2000 });
+await p.screenshot({ path: `${out}/store.png` });
+await p.goBack(); await p.waitForTimeout(1500);
+await tap(p, 'ملفك الشخصي', { wait: 2000 });
+await p.mouse.move(195, 500); await p.mouse.wheel(0, 900); await p.waitForTimeout(900);
+await p.screenshot({ path: `${out}/rank.png` });
+await p.goBack(); await p.waitForTimeout(1500);
+await tap(p, 'المغامرة', { wait: 2500 });
+await p.screenshot({ path: `${out}/adventure.png` });
+await tap(p, 'ابدأ', { wait: 3000 });
+await reps(p, 6, 700);
+await p.waitForTimeout(400);
+await p.screenshot({ path: `${out}/battle.png` });
+console.log('errors', p.errs?.length ?? 0);
+await b.close();

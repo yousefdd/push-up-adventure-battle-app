@@ -1,0 +1,122 @@
+// Temporary balance report. Run: flutter test test/zz_tune_test.dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:repraid/modes/rpg/adventure_rules.dart';
+
+double repGap(Rng rng) => 0.9 + rng() * 1.0 + rng() * 0.3;
+
+GearBonus kit(Rarity? r) {
+  if (r == null) return GearBonus.none;
+  final a = Armory();
+  for (final k in ['sword', 'plate', 'helm', 'greaves', 'ruby', 'star']) {
+    a.add(k, r);
+  }
+  return a.bonus;
+}
+
+var strikes = 0, fights = 0, bossStrikes = 0, bosses = 0, oneHits = 0, reps = 0;
+
+bool clears(Rng rng, ChapterDef ch, Tier tier, String cls, GearBonus gear) {
+  final h = Hero.start(ch.startLevel, cls, gear);
+  var charge = 0;
+  for (final n in chapterOne) {
+    if (n == 'skill') {
+      applySkill(h, skillOffer(rng)[(rng() * 3).floor()]);
+    } else if (n == 'story') {
+      stories[(rng() * stories.length).floor()].effect.apply(h);
+    } else if (n == 'wheel') {
+      final s = wheel[(rng() * wheel.length).floor()];
+      if (s.skill) {
+        applySkill(h, skillOffer(rng)[0]);
+      } else if (s.xp > 0) {
+        gainXp(h, s.xp);
+      } else {
+        s.apply!(h);
+      }
+    } else if (n == 'choice') {
+      final c = choices[(rng() * choices.length).floor()];
+      (rng() < .5 ? c.a : c.b).effect.apply(h);
+    } else if (n == 'chest') {
+      equip(h, rollLoot(rng, luck: h.heroClass.lootLuck));
+    } else {
+      final b = Battle(h, foeFor(n == 'boss' ? 'boss' : n.substring(4), ch, tier), rng, charge: charge);
+      var k = 0;
+      final won = simulateFight(b, () {
+        k++;
+        return repGap(rng);
+      });
+      reps += k;
+      if (n == 'boss') {
+        if (b.won) {
+          bossStrikes += k;
+          bosses++;
+        }
+      } else {
+        strikes += k;
+        fights++;
+        if (k <= 1) oneHits++;
+      }
+      if (!won) return false;
+      charge = b.charge;
+      gainXp(h, winFight(h, b.st).$1);
+    }
+  }
+  reps += 30;
+  return true;
+}
+
+void main() {
+  test('tune', tuneMain);
+  test('report', () {
+    for (final (label, tier, gear) in [
+      ('night legend', Tier.nightmare, kit(Rarity.legendary)),
+      ('night mythic', Tier.nightmare, kit(Rarity.mythic)),
+    ]) {
+      final out = StringBuffer('$label:\n');
+      for (final ch in chapters) {
+        strikes = fights = bossStrikes = bosses = oneHits = reps = 0;
+        var w = 0, n = 0;
+        for (final c in heroClasses) {
+          final rng = seededRng(ch.number * 131 + c.id.length);
+          for (var i = 0; i < 100; i++) {
+            n++;
+            if (clears(rng, ch, tier, c.id, gear)) w++;
+          }
+        }
+        out.writeln('  ${ch.number.toString().padLeft(2)} ${ch.id.padRight(8)} lv${ch.startLevel.toString().padLeft(2)} '
+            'clear ${(w / n * 100).toStringAsFixed(0).padLeft(3)}%  hits/fight ${(strikes / fights).toStringAsFixed(1)} '
+            'boss ${(bossStrikes / (bosses == 0 ? 1 : bosses)).toStringAsFixed(1)}  1-hit ${(oneHits / fights * 100).toStringAsFixed(1)}%  reps/run ${(reps / n).round()}');
+      }
+      // ignore: avoid_print
+      print(out);
+    }
+  });
+}
+
+double rateOf(ChapterDef ch, Tier tier, GearBonus gear, {int n = 60}) {
+  var w = 0, k = 0;
+  for (final c in heroClasses) {
+    final rng = seededRng(ch.number * 131 + c.id.length);
+    for (var i = 0; i < n; i++) {
+      k++;
+      if (clears(rng, ch, tier, c.id, gear)) w++;
+    }
+  }
+  return w / k;
+}
+
+ChapterDef at(ChapterDef c, int lv) => ChapterDef(
+    number: c.number, id: c.id, roman: c.roman, name: c.name, blurb: c.blurb, foes: c.foes, boss: c.boss, startLevel: lv);
+
+void tuneMain() {
+  final levels = <int>[];
+  var lv = 1;
+  for (final ch in chapters) {
+    final target = ch.number == 1 ? 0.5 : 0.45;
+    while (rateOf(at(ch, lv), Tier.normal, kit(null)) < target) {
+      lv++;
+    }
+    levels.add(lv);
+  }
+  // ignore: avoid_print
+  print('START_LEVELS = $levels');
+}
