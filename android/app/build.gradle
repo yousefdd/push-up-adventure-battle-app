@@ -1,15 +1,15 @@
-// The release key comes from android/key.properties (written by CI from
-// repository secrets). Without it, release builds fall back to the debug key.
-def keyProps = new Properties()
-def keyFile = rootProject.file("key.properties")
-if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
-
 plugins {
     id "com.android.application"
     id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
+
+// The release key comes from android/key.properties (written by CI from
+// repository secrets). Without it, release builds fall back to the debug key.
+def keyProps = new Properties()
+def keyFile = rootProject.file("key.properties")
+if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
 
 android {
     namespace = "com.repraid.repraid"
