@@ -101,8 +101,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
       _busy = true;
       _error = null;
     });
-    // No camera, no race: only the camera can count a push-up.
-    if (!await (kIsWeb ? WebPoseSource.check() : CameraPoseSource.check())) {
+    // No camera, no race: only the camera can count a push-up. The video
+    // build counts without one, and only reaches friendly (unranked) races.
+    if (!kDemoBuild && !await (kIsWeb ? WebPoseSource.check() : CameraPoseSource.check())) {
       if (mounted) {
         setState(() {
           _busy = false;
@@ -253,12 +254,12 @@ class _LobbyScreenState extends State<LobbyScreen> {
     }
     // On a phone the front camera and ML Kit count the reps; in a browser the
     // webcam and MediaPipe (web/rr_pose.js) do. With no camera nothing counts.
-    final web = kIsWeb && WebPoseSource.available ? WebPoseSource() : null;
-    final camera = kIsWeb ? null : CameraPoseSource();
+    final web = !kDemoBuild && kIsWeb && WebPoseSource.available ? WebPoseSource() : null;
+    final camera = kDemoBuild || kIsWeb ? null : CameraPoseSource();
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => DuelScreen(
         bout: bout,
-        poseSource: camera ?? web ?? NoCameraSource(),
+        poseSource: camera ?? web ?? (kDemoBuild ? DemoPoseSource(secondsPerRep: 1.4) : NoCameraSource()),
         cameraBuilder: camera != null
             ? (overlay) => camera.preview(overlay: overlay)
             : web != null
