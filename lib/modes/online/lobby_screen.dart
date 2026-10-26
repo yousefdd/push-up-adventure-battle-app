@@ -20,6 +20,8 @@ import 'duel_models.dart';
 import 'duel_screen.dart';
 import 'duel_service.dart';
 import 'pose_frame_source.dart';
+import '../../demo/demo_pose_source.dart';
+import '../../demo/demo_race.dart';
 import '../../i18n/i18n.dart';
 import '../../ui/motion.dart';
 
@@ -280,6 +282,34 @@ class _LobbyScreenState extends State<LobbyScreen> {
     ));
   }
 
+  /// The video build only: a race against a bot on this phone, reps counted
+  /// without a camera, nothing sent to the server.
+  void _demoRace() {
+    final me = _me;
+    const lead = 5;
+    final rival = DemoRival()..start(leadSecs: lead);
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => DuelScreen(
+        bout: DuelBout(
+          boutId: 'demo',
+          myId: 'me',
+          opponentId: 'bot',
+          exercise: widget.exercise,
+          window: DuelWindow(fightSecs: _secs, leadSecs: lead),
+          me: DuelPlayer(name: me?.displayName ?? tr('You'), level: me?.level ?? 1, avatar: 'assets/rc/Adrian.png', photo: me?.photo),
+          opponent: DemoRival.player,
+        ),
+        poseSource: DemoPoseSource(secondsPerRep: 1.4),
+        opponentPulses: rival.pulses.stream,
+        opponentTaunts: rival.taunts.stream,
+        onExit: () {
+          rival.stop();
+          Navigator.of(context).pop();
+        },
+      ),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     final label = ExerciseProfile.defaults[widget.exercise]!.label;
@@ -339,7 +369,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
         enabled: !_busy,
         amount: 0.03,
         child: ElevatedButton.icon(
-          onPressed: _busy ? null : _findOpponent,
+          onPressed: _busy ? null : (kDemoBuild ? _demoRace : _findOpponent),
           icon: const Icon(Icons.public),
           label: Text(tr('Find an opponent')),
         ),

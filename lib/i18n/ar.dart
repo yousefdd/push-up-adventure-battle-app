@@ -404,6 +404,7 @@ const ar = <String, String>{
   'I already have an account': 'لدي حساب',
   'Grandmaster': 'غراند ماستر',
   'Champion': 'بطل',
+  'You': 'أنت',
   'No camera, no reps': 'بدون كاميرا لا تُحسب ضغطات',
   'Allow the camera to race. Only the camera can count a push-up.':
       'اسمح بالكاميرا لتدخل السباق. الكاميرا وحدها تعدّ الضغطات.',
