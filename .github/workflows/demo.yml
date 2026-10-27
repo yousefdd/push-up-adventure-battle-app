@@ -3,7 +3,7 @@ name: Video demo APK
 # Run by hand (Actions → Video demo APK → Run workflow). Builds a separate
 # app, "PUAB Demo", whose races are against a bot with reps counted without a
 # camera, for filming. It installs next to the real game and never talks to
-# the race server. The APK is kept as this run's artifact, not published.
+# the race server. The APK is kept as this run's artifact (90 days, the most GitHub allows), not published.
 on:
   workflow_dispatch:
 
@@ -50,4 +50,4 @@ jobs:
         with:
           name: PushUpAdventureBattle-Demo
           path: out/PushUpAdventureBattle-Demo.apk
-          retention-days: 14
+          retention-days: 90
